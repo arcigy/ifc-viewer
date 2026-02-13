@@ -1,0 +1,13 @@
+:{$PORT} {
+    root * dist
+    file_server
+    
+    # Explicitly set MIME type for WASM files
+    @wasm path *.wasm
+    header @wasm Content-Type application/wasm
+    header @wasm Access-Control-Allow-Origin *
+
+    # Handle SPA routing: try files first, then fallback to index.html
+    # But ONLY for paths that don't look like assets
+    try_files {path} /index.html
+}
