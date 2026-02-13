@@ -16,6 +16,7 @@ export interface LoadingProgress {
 export type ProgressCallback = (progress: LoadingProgress) => void;
 
 export class IFCManager {
+  private loaderReady: Promise<void>;
   private loader: IFCLoader;
   private scene: THREE.Scene;
   private currentModel: THREE.Object3D | null = null;
@@ -26,7 +27,7 @@ export class IFCManager {
   constructor(scene: THREE.Scene) {
     this.scene = scene;
     this.loader = new IFCLoader();
-    this.setupLoader();
+    this.loaderReady = this.setupLoader();
 
     // Create highlight material for subsets
     this.highlightMaterial = new THREE.MeshBasicMaterial({
@@ -45,16 +46,18 @@ export class IFCManager {
     });
   }
 
-  private setupLoader() {
-    // WASM "brains" stay on CDN to avoid Railway MIME type issues.
-    const wasmPath = "https://unpkg.com/web-ifc@0.0.39/";
+  private async setupLoader() {
+    // We use a local wasm folder with version-matched files (0.0.39).
+    const wasmPath = "/wasm/";
+    
+    // 1. Enable workers first (must be local to avoid SecurityError)
+    await this.loader.ifcManager.useWebWorkers(true, "/wasm/IFCWorker.js");
+    
+    // 2. Set WASM path (the worker will search for web-ifc.wasm in this folder)
     this.loader.ifcManager.setWasmPath(wasmPath);
 
-    // Web Worker MUST be local to avoid "SecurityError: Failed to construct Worker"
-    // We already moved this file to public/IFCWorker.js
-    this.loader.ifcManager.useWebWorkers(true, "/IFCWorker.js");
-
-    console.log("IFC Engine initialized: WASM from CDN, Worker from Local");
+    console.log("IFC Engine initialized: Local Worker and WASM (0.0.39)");
+    console.log("WASM folder:", wasmPath);
 
     // Optimize for large files
     try {
@@ -100,6 +103,8 @@ export class IFCManager {
   }
 
   public async loadIFC(url: string, onProgress?: ProgressCallback) {
+    // Wait for the engine to be fully initialized (workers and WASM path)
+    await this.loaderReady;
     try {
       // Dispose previous model before loading new one
       this.disposeCurrentModel();
