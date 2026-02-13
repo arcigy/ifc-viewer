@@ -46,16 +46,15 @@ export class IFCManager {
   }
 
   private setupLoader() {
-    // We use official CDN for WASM to avoid Railway's MIME type and routing issues.
-    // This version (0.0.39) is highly stable and compatible with web-ifc-three.
+    // WASM "brains" stay on CDN to avoid Railway MIME type issues.
     const wasmPath = "https://unpkg.com/web-ifc@0.0.39/";
     this.loader.ifcManager.setWasmPath(wasmPath);
 
-    // Use Web Workers from CDN as well to ensure total compatibility.
-    this.loader.ifcManager.useWebWorkers(true, "https://unpkg.com/web-ifc-three@0.0.126/IFCWorker.js");
+    // Web Worker MUST be local to avoid "SecurityError: Failed to construct Worker"
+    // We already moved this file to public/IFCWorker.js
+    this.loader.ifcManager.useWebWorkers(true, "/IFCWorker.js");
 
-    console.log("IFC Engine initialized using official CDN (0.0.39)");
-    console.log("WASM CDN Path:", wasmPath);
+    console.log("IFC Engine initialized: WASM from CDN, Worker from Local");
 
     // Optimize for large files
     try {
