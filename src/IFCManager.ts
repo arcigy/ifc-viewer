@@ -1,5 +1,10 @@
 import * as THREE from "three";
-import { IFCLoader } from "three/examples/jsm/loaders/IFCLoader.js";
+import { IFCLoader } from "web-ifc-three/IFCLoader";
+import {
+  acceleratedRaycast,
+  computeBoundsTree,
+  disposeBoundsTree,
+} from "three-mesh-bvh";
 
 export interface LoadingProgress {
   loaded: number;
@@ -42,16 +47,23 @@ export class IFCManager {
 
   private setupLoader() {
     // Configure the path to the WASM file
-    // IMPORTANT: For Three.js 0.149.0 IFCLoader, we must use the compatible WASM files.
-    // We use an absolute path start with / to ensure it works on both localhost and Railway.
+    // We use the modern 1.3MB WASM files compatible with web-ifc-three.
     const wasmPath = "/wasm/";
     this.loader.ifcManager.setWasmPath(wasmPath);
 
-    console.log("IFC Loader configured with WASM path:", wasmPath);
+    // Use Web Workers for non-blocking loading (critical for 60MB+ files)
+    // The worker file was copied to public/wasm/IFCWorker.js
+    this.loader.ifcManager.useWebWorkers(true, "/wasm/IFCWorker.js");
 
-    // Optimize for large files - wrap in try/catch in case dependency is missing
+    console.log("IFC Engine initialized with modern WASM and Web Workers");
+
+    // Optimize for large files
     try {
-      this.loader.ifcManager.setupThreeMeshBVH();
+      this.loader.ifcManager.setupThreeMeshBVH(
+        computeBoundsTree,
+        disposeBoundsTree,
+        acceleratedRaycast,
+      );
     } catch (e) {
       console.warn(
         "Could not setup ThreeMeshBVH. Performance might be reduced.",
