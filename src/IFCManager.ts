@@ -47,15 +47,16 @@ export class IFCManager {
 
   private setupLoader() {
     // Configure the path to the WASM file
-    // We use the modern 1.3MB WASM files compatible with web-ifc-three.
-    const wasmPath = "/wasm/";
+    // We use absolute paths to ensure the worker and WASM files are found correctly.
+    const wasmPath = window.location.origin + "/";
     this.loader.ifcManager.setWasmPath(wasmPath);
 
     // Use Web Workers for non-blocking loading (critical for 60MB+ files)
-    // The worker file was copied to public/wasm/IFCWorker.js
-    this.loader.ifcManager.useWebWorkers(true, "/wasm/IFCWorker.js");
+    // We moved the worker file to the root public folder for easier access.
+    this.loader.ifcManager.useWebWorkers(true, "/IFCWorker.js");
 
-    console.log("IFC Engine initialized with modern WASM and Web Workers");
+    console.log("IFC Engine initialized with absolute paths and Web Workers");
+    console.log("WASM Path:", wasmPath);
 
     // Optimize for large files
     try {
