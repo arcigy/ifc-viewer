@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ifc-test-ag</title>
+</head>
+
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <h2>IFC Viewer</h2>
+      <div class="control-group">
+        <label for="file-input" class="custom-file-upload">
+          Open IFC File
+        </label>
+        <input type="file" id="file-input" accept=".ifc" />
+        <button id="toggle-validation" class="action-button" style="margin-left: 10px;">Validator</button>
+      </div>
+      <div id="properties-panel">
+        <p class="placeholder-text">Select an element to view properties.</p>
+      </div>
+      <div id="validation-panel" class="hidden">
+        <h3>Validation</h3>
+        <div class="validation-controls">
+          <textarea id="validation-rules" rows="5" placeholder="Enter validation rules JSON..."></textarea>
+          <button id="btn-validate" class="action-button">Run Validation</button>
+        </div>
+        <div id="validation-results"></div>
+      </div>
+    </aside>
+    <main id="three-canvas-container"></main>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <h3 id="loading-title">Loading IFC Model...</h3>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      <p id="loading-status">Preparing...</p>
+      <p id="loading-percentage">0%</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
